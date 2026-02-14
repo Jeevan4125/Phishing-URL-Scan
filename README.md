@@ -1,4 +1,4 @@
-# 🛡️ PhishGuard Pro - Advanced Phishing URL Detection System
+# 🛡️ Phishing URL- Advanced Phishing URL Detection System
 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![Python](https://img.shields.io/badge/python-3.8%2B-green)

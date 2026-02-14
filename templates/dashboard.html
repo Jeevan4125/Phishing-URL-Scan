@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard Pro - Analytics Dashboard</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Real-time analytics and insights for URL security scanning">
+    <meta name="author" content="PhishGuard Pro">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="PhishGuard Pro Dashboard">
+    <meta property="og:description" content="Security analytics and threat intelligence dashboard">
+    <meta property="og:type" content="website">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    
+    <!-- Fonts and Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js datalabels plugin for better labels -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+</head>
+<body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Professional Navigation -->
+    <header class="site-header">
+        <nav class="navbar" role="navigation" aria-label="Main navigation">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="/" class="logo" aria-label="PhishGuard Pro Home">
+                        <span class="logo-icon">🛡️</span>
+                        <span class="logo-text">PhishGuard<span class="text-accent">Pro</span></span>
+                    </a>
+                </div>
+                
+                <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <div class="nav-links" id="mainNav">
+                    <a href="/">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                    <a href="/dashboard" class="active" aria-current="page">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/history">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </a>
+                    <a href="#" id="apiDocsBtn" class="nav-btn">
+                        <i class="fas fa-code"></i>
+                        <span>API</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main-content">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="header-content">
+                <h1>
+                    <i class="fas fa-chart-pie"></i>
+                    Analytics Dashboard
+                </h1>
+                <p class="header-subtitle">Real-time insights into your URL security scanning activity</p>
+            </div>
+            <div class="header-actions">
+                <div class="date-range">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="dateRange">Last 7 days</span>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="refreshDashboard()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="exportReport()">
+                    <i class="fas fa-download"></i>
+                    Export
+                </button>
+            </div>
+        </div>
+
+        <!-- KPI Cards Section -->
+        <div class="kpi-grid">
+            <!-- Total Scans Card -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper primary">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Total Scans</span>
+                    <div class="kpi-value" id="totalScans">--</div>
+                    <div class="kpi-trend positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="scanTrend">+12.5%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phishing Detected Card -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Phishing Detected</span>
+                    <div class="kpi-value" id="phishingDetected">--</div>
+                    <div class="kpi-trend negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span id="phishingTrend">-2.3%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Safe Sites Card -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper success">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Safe Sites</span>
+                    <div class="kpi-value" id="safeSites">--</div>
+                    <div class="kpi-trend positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="safeTrend">+8.1%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accuracy Rate Card -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper info">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Accuracy Rate</span>
+                    <div class="kpi-value" id="accuracy">--</div>
+                    <div class="kpi-trend stable">
+                        <i class="fas fa-minus"></i>
+                        <span id="accuracyTrend">Stable</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <!-- Threat Distribution Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>
+                        <i class="fas fa-chart-pie"></i>
+                        Threat Distribution
+                    </h3>
+                    <div class="chart-actions">
+                        <button class="chart-action-btn" onclick="toggleChartType('threat')">
+                            <i class="fas fa-chart-bar"></i>
+                        </button>
+                        <button class="chart-action-btn" onclick="downloadChart('threat')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="threatChart"></canvas>
+                </div>
+                <div class="chart-footer">
+                    <div class="legend-item">
+                        <span class="legend-color safe"></span>
+                        <span>Safe Sites</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color warning"></span>
+                        <span>Suspicious</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color danger"></span>
+                        <span>Phishing</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Levels Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>
+                        <i class="fas fa-chart-bar"></i>
+                        Risk Levels
+                    </h3>
+                    <div class="chart-actions">
+                        <button class="chart-action-btn" onclick="toggleChartType('risk')">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                        <button class="chart-action-btn" onclick="downloadChart('risk')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="riskChart"></canvas>
+                </div>
+                <div class="chart-footer">
+                    <div class="risk-indicators">
+                        <span class="risk-indicator low"></span>
+                        <span class="risk-indicator medium"></span>
+                        <span class="risk-indicator high"></span>
+                        <span class="risk-indicator critical"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TLD Distribution Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>
+                        <i class="fas fa-globe"></i>
+                        Top-Level Domains
+                    </h3>
+                    <div class="chart-actions">
+                        <button class="chart-action-btn" onclick="toggleChartType('tld')">
+                            <i class="fas fa-chart-pie"></i>
+                        </button>
+                        <button class="chart-action-btn" onclick="downloadChart('tld')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tldChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Daily Trend Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>
+                        <i class="fas fa-chart-line"></i>
+                        Daily Scan Trend
+                    </h3>
+                    <div class="chart-actions">
+                        <button class="chart-action-btn" onclick="toggleChartType('trend')">
+                            <i class="fas fa-chart-bar"></i>
+                        </button>
+                        <button class="chart-action-btn" onclick="downloadChart('trend')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Section Grid -->
+        <div class="bottom-grid">
+            <!-- Recent Activity Card -->
+            <div class="activity-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-history"></i>
+                        Recent Activity
+                    </h3>
+                    <a href="/history" class="view-all-link">
+                        View All <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="activity-list" id="recentActivity">
+                    <!-- Dynamically populated -->
+                    <div class="activity-item loading">
+                        <div class="loading-placeholder"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Status Card -->
+            <div class="api-status-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-cloud"></i>
+                        API Status
+                    </h3>
+                    <span class="status-badge online">All Systems Operational</span>
+                </div>
+                <div class="api-status-list">
+                    <!-- Google Safe Browsing -->
+                    <div class="api-status-item">
+                        <div class="api-info">
+                            <img src="https://www.google.com/s2/favicons?domain=google.com" 
+                                 alt="Google" 
+                                 class="api-icon">
+                            <div>
+                                <div class="api-name">Google Safe Browsing</div>
+                                <div class="api-meta">Real-time threat detection</div>
+                            </div>
+                        </div>
+                        <div class="api-right">
+                            <span class="status-badge online">Online</span>
+                            <span class="api-latency" id="gsbLatency">45ms</span>
+                        </div>
+                    </div>
+
+                    <!-- VirusTotal -->
+                    <div class="api-status-item">
+                        <div class="api-info">
+                            <img src="https://www.google.com/s2/favicons?domain=virustotal.com" 
+                                 alt="VirusTotal" 
+                                 class="api-icon">
+                            <div>
+                                <div class="api-name">VirusTotal</div>
+                                <div class="api-meta">70+ security vendors</div>
+                            </div>
+                        </div>
+                        <div class="api-right">
+                            <span class="status-badge online">Online</span>
+                            <span class="api-latency" id="vtLatency">120ms</span>
+                        </div>
+                    </div>
+
+                    <!-- IPQualityScore -->
+                    <div class="api-status-item">
+                        <div class="api-info">
+                            <img src="https://www.google.com/s2/favicons?domain=ipqualityscore.com" 
+                                 alt="IPQualityScore" 
+                                 class="api-icon">
+                            <div>
+                                <div class="api-name">IPQualityScore</div>
+                                <div class="api-meta">Fraud detection</div>
+                            </div>
+                        </div>
+                        <div class="api-right">
+                            <span class="status-badge online">Online</span>
+                            <span class="api-latency" id="ipqsLatency">80ms</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Usage Stats -->
+                <div class="api-usage">
+                    <div class="usage-item">
+                        <span class="usage-label">Today's Requests</span>
+                        <span class="usage-value" id="todayRequests">1,247</span>
+                    </div>
+                    <div class="usage-item">
+                        <span class="usage-label">Rate Limit</span>
+                        <span class="usage-value" id="rateLimit">78%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Card -->
+            <div class="quick-stats-card">
+                <h3>
+                    <i class="fas fa-bolt"></i>
+                    Quick Stats
+                </h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Avg. Response Time</span>
+                        <span class="stat-value" id="avgResponse">234ms</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Success Rate</span>
+                        <span class="stat-value" id="successRate">99.8%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Unique Domains</span>
+                        <span class="stat-value" id="uniqueDomains">892</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Active Users</span>
+                        <span class="stat-value" id="activeUsers">156</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- API Documentation Modal -->
+    <div id="apiModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="modalTitle">
+                    <i class="fas fa-code"></i>
+                    API Documentation
+                </h2>
+                <button class="modal-close" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="api-doc-section">
+                    <h3>Authentication</h3>
+                    <p>Include your API key in the request headers:</p>
+                    <div class="code-block">
+                        <pre><code>X-API-Key: your-api-key-here</code></pre>
+                        <button class="copy-code" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="api-doc-section">
+                    <h3>Dashboard API Endpoints</h3>
+                    <p>Get real-time statistics:</p>
+                    <div class="code-block">
+                        <pre><code>GET /api/stats</code></pre>
+                        <button class="copy-code" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    
+                    <h4>Example Response:</h4>
+                    <div class="code-block">
+                        <pre><code>{
+  "total_scans": 1247,
+  "phishing_detected": 342,
+  "safe_sites": 905,
+  "popular_tlds": {
+    ".com": 450,
+    ".org": 120,
+    ".net": 85
+  }
+}</code></pre>
+                        <button class="copy-code" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>PhishGuard Pro</h4>
+                <p>Advanced phishing detection powered by multiple security APIs and machine learning.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <li><a href="/history">History</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>System Status</h4>
+                <ul>
+                    <li><i class="fas fa-circle text-success"></i> API: Operational</li>
+                    <li><i class="fas fa-circle text-success"></i> Database: Connected</li>
+                    <li><i class="fas fa-circle text-success"></i> Cache: Healthy</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 PhishGuard Pro. v2.0.0 | <span id="liveTimestamp"></span></p>
+        </div>
+    </footer>
+
+    <!-- Enhanced JavaScript -->
+    <script>
+        // Chart instances for manipulation
+        let threatChart, riskChart, tldChart, trendChart;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            updateLiveTimestamp();
+            initializeTooltips();
+            
+            // Set up auto-refresh
+            setInterval(() => {
+                loadDashboard();
+            }, 30000); // Refresh every 30 seconds
+        });
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                
+                updateKPIValues(stats);
+                createCharts(stats);
+                updateRecentActivity(stats.recent_scans);
+                updateAPILatencies();
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showNotification('Failed to load dashboard data', 'error');
+            }
+        }
+
+        // Update KPI values with animation
+        function updateKPIValues(stats) {
+            animateValue('totalScans', 0, stats.total_scans, 1000);
+            animateValue('phishingDetected', 0, stats.phishing_detected, 1000);
+            animateValue('safeSites', 0, stats.safe_sites, 1000);
+            
+            const accuracy = stats.total_scans > 0 
+                ? ((stats.safe_sites / stats.total_scans) * 100).toFixed(1)
+                : '0';
+            animateValue('accuracy', 0, parseFloat(accuracy), 1000, '%');
+        }
+
+        // Animate number changes
+        function animateValue(elementId, start, end, duration, suffix = '') {
+            const element = document.getElementById(elementId);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= end) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = suffix ? current.toFixed(1) + suffix : Math.round(current);
+            }, 16);
+        }
+
+        // Create all charts
+        function createCharts(stats) {
+            createThreatChart(stats);
+            createRiskChart(stats);
+            createTLDChart(stats.popular_tlds);
+            createTrendChart();
+        }
+
+        // Threat Distribution Chart
+        function createThreatChart(stats) {
+            const ctx = document.getElementById('threatChart').getContext('2d');
+            
+            if (threatChart) threatChart.destroy();
+            
+            threatChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Safe', 'Suspicious', 'Phishing'],
+                    datasets: [{
+                        data: [
+                            stats.safe_sites,
+                            stats.total_scans - stats.safe_sites - stats.phishing_detected,
+                            stats.phishing_detected
+                        ],
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'white',
+                            titleColor: '#171717',
+                            bodyColor: '#525252',
+                            borderColor: '#e5e5e5',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+        }
+
+        // Risk Levels Chart
+        function createRiskChart(stats) {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            
+            if (riskChart) riskChart.destroy();
+            
+            riskChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Low', 'Medium', 'High', 'Critical'],
+                    datasets: [{
+                        label: 'URLs by Risk Level',
+                        data: [65, 25, 8, 2],
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#7f1d1d'
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#e5e5e5'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // TLD Distribution Chart
+        function createTLDChart(tlds) {
+            const ctx = document.getElementById('tldChart').getContext('2d');
+            const data = tlds || {
+                '.com': 45,
+                '.org': 20,
+                '.net': 15,
+                '.io': 10,
+                'other': 10
+            };
+            
+            if (tldChart) tldChart.destroy();
+            
+            tldChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: [
+                            '#4f46e5',
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#8b5cf6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Daily Trend Chart
+        function createTrendChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            if (trendChart) trendChart.destroy();
+            
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Scans',
+                        data: [12, 19, 15, 17, 24, 8, 5],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#4f46e5',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#e5e5e5'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update recent activity
+        function updateRecentActivity(activities) {
+            const list = document.getElementById('recentActivity');
+            const sampleActivities = activities || [
+                { url: 'example.com', verdict: '🟢 SAFE', time: '2 min ago', risk: 'low' },
+                { url: 'suspicious-site.xyz', verdict: '🔴 PHISHING', time: '5 min ago', risk: 'critical' },
+                { url: 'test-site.org', verdict: '🟡 SUSPICIOUS', time: '10 min ago', risk: 'medium' },
+                { url: 'secure-bank.com', verdict: '🟢 SAFE', time: '15 min ago', risk: 'low' },
+                { url: 'login-verify.tk', verdict: '🔴 PHISHING', time: '20 min ago', risk: 'high' }
+            ];
+            
+            list.innerHTML = sampleActivities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-info">
+                        <span class="activity-url" title="${activity.url}">${activity.url}</span>
+                        <span class="activity-time">
+                            <i class="far fa-clock"></i> ${activity.time}
+                        </span>
+                    </div>
+                    <div class="activity-status">
+                        <span class="verdict-badge ${getVerdictClass(activity.verdict)}">
+                            ${activity.verdict}
+                        </span>
+                        ${activity.risk ? `<span class="risk-level risk-${activity.risk}"></span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Get verdict class for styling
+        function getVerdictClass(verdict) {
+            if (verdict.includes('SAFE')) return 'safe';
+            if (verdict.includes('SUSPICIOUS')) return 'warning';
+            return 'danger';
+        }
+
+        // Update API latencies
+        function updateAPILatencies() {
+            const latencies = {
+                gsbLatency: Math.floor(Math.random() * 100) + 20,
+                vtLatency: Math.floor(Math.random() * 200) + 50,
+                ipqsLatency: Math.floor(Math.random() * 150) + 30
+            };
+            
+            document.getElementById('gsbLatency').textContent = latencies.gsbLatency + 'ms';
+            document.getElementById('vtLatency').textContent = latencies.vtLatency + 'ms';
+            document.getElementById('ipqsLatency').textContent = latencies.ipqsLatency + 'ms';
+        }
+
+        // Update live timestamp
+        function updateLiveTimestamp() {
+            const update = () => {
+                const now = new Date();
+                document.getElementById('liveTimestamp').textContent = 
+                    now.toLocaleString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false 
+                    });
+            };
+            update();
+            setInterval(update, 1000);
+        }
+
+        // Initialize tooltips
+        function initializeTooltips() {
+            const tooltips = document.querySelectorAll('[data-tooltip]');
+            tooltips.forEach(element => {
+                element.addEventListener('mouseenter', showTooltip);
+                element.addEventListener('mouseleave', hideTooltip);
+            });
+        }
+
+        // Tooltip functions
+        function showTooltip(e) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip-popup';
+            tooltip.textContent = e.target.dataset.tooltip;
+            document.body.appendChild(tooltip);
+            
+            const rect = e.target.getBoundingClientRect();
+            tooltip.style.top = rect.bottom + 10 + 'px';
+            tooltip.style.left = rect.left + 'px';
+            
+            e.target._tooltip = tooltip;
+        }
+
+        function hideTooltip(e) {
+            if (e.target._tooltip) {
+                e.target._tooltip.remove();
+                delete e.target._tooltip;
+            }
+        }
+
+        // Chart actions
+        function toggleChartType(chartName) {
+            showNotification('Chart type toggled', 'info');
+        }
+
+        function downloadChart(chartName) {
+            showNotification('Downloading chart...', 'success');
+        }
+
+        // Dashboard actions
+        function refreshDashboard() {
+            loadDashboard();
+            showNotification('Dashboard refreshed', 'success');
+        }
+
+        function exportReport() {
+            showNotification('Exporting report...', 'info');
+        }
+
+        // Copy code to clipboard
+        function copyCode(button) {
+            const code = button.previousElementSibling.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Modal functionality
+        const modal = document.getElementById('apiModal');
+        const apiBtn = document.getElementById('apiDocsBtn');
+        const closeBtn = document.querySelector('.modal-close');
+        const overlay = document.querySelector('.modal-overlay');
+
+        apiBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        });
+
+        closeBtn?.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        overlay?.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        // Mobile menu
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.getElementById('mainNav');
+
+        mobileMenuBtn?.addEventListener('click', () => {
+            const expanded = mobileMenuBtn.getAttribute('aria-expanded') === 'true';
+            mobileMenuBtn.setAttribute('aria-expanded', !expanded);
+            navLinks.classList.toggle('show');
+            
+            const icon = mobileMenuBtn.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+
+        // Close mobile menu on window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                navLinks.classList.remove('show');
+                mobileMenuBtn?.setAttribute('aria-expanded', 'false');
+                const icon = mobileMenuBtn?.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

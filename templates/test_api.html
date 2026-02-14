@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Key Tester - PhishGuard Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h1 i {
+            color: #4f46e5;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .api-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .api-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .api-header img {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .api-header h3 {
+            flex: 1;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .api-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-unknown {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .status-working {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-failed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .api-key-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .api-key-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .api-key-input.placeholder {
+            color: #94a3b8;
+        }
+        
+        .test-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .test-btn:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+        
+        .test-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            display: none;
+        }
+        
+        .result-box.show {
+            display: block;
+        }
+        
+        .result-success {
+            border-left: 4px solid #22c55e;
+        }
+        
+        .result-error {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .result-details {
+            font-size: 14px;
+        }
+        
+        .result-details pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+        .badge-success {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .badge-error {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .summary {
+            background: #1e293b;
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .secondary-btn {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .secondary-btn:hover {
+            background: #e2e8f0;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            color: #94a3b8;
+            cursor: help;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            background: #1e293b;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            width: 200px;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>
+                <i class="fas fa-key"></i>
+                API Key Validator
+            </h1>
+            <p class="subtitle">Test and validate your API keys for PhishGuard Pro</p>
+            
+            <!-- Google Safe Browsing -->
+            <div class="api-section" id="google-section">
+                <div class="api-header">
+                    <img src="https://www.google.com/s2/favicons?domain=google.com" alt="Google">
+                    <h3>Google Safe Browsing</h3>
+                    <span class="api-status status-unknown" id="google-status">Not Tested</span>
+                </div>
+                
+                <div class="api-key-container">
+                    <input type="text" 
+                           class="api-key-input" 
+                           id="google-key" 
+                           placeholder="Enter Google Safe Browsing API Key"
+                           value="">
+                    <button class="test-btn" onclick="testGoogleKey()" id="google-test-btn">
+                        <i class="fas fa-vial"></i>
+                        Test Key
+                    </button>
+                </div>
+                
+                <div class="result-box" id="google-result"></div>
+            </div>
+            
+            <!-- VirusTotal -->
+            <div class="api-section" id="virustotal-section">
+                <div class="api-header">
+                    <img src="https://www.google.com/s2/favicons?domain=virustotal.com" alt="VirusTotal">
+                    <h3>VirusTotal</h3>
+                    <span class="api-status status-unknown" id="virustotal-status">Not Tested</span>
+                </div>
+                
+                <div class="api-key-container">
+                    <input type="text" 
+                           class="api-key-input" 
+                           id="virustotal-key" 
+                           placeholder="Enter VirusTotal API Key"
+                           value="">
+                    <button class="test-btn" onclick="testVirusTotalKey()" id="virustotal-test-btn">
+                        <i class="fas fa-vial"></i>
+                        Test Key
+                    </button>
+                </div>
+                
+                <div class="result-box" id="virustotal-result"></div>
+            </div>
+            
+            <!-- IPQualityScore -->
+            <div class="api-section" id="ipqs-section">
+                <div class="api-header">
+                    <img src="https://www.google.com/s2/favicons?domain=ipqualityscore.com" alt="IPQualityScore">
+                    <h3>IPQualityScore</h3>
+                    <span class="api-status status-unknown" id="ipqs-status">Not Tested</span>
+                </div>
+                
+                <div class="api-key-container">
+                    <input type="text" 
+                           class="api-key-input" 
+                           id="ipqs-key" 
+                           placeholder="Enter IPQualityScore API Key"
+                           value="">
+                    <button class="test-btn" onclick="testIPQSKey()" id="ipqs-test-btn">
+                        <i class="fas fa-vial"></i>
+                        Test Key
+                    </button>
+                </div>
+                
+                <div class="result-box" id="ipqs-result"></div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="secondary-btn" onclick="testAllKeys()">
+                    <i class="fas fa-flask"></i>
+                    Test All Keys
+                </button>
+                <button class="secondary-btn" onclick="loadFromEnv()">
+                    <i class="fas fa-file-alt"></i>
+                    Load from .env
+                </button>
+                <button class="secondary-btn" onclick="saveKeys()">
+                    <i class="fas fa-save"></i>
+                    Save to .env
+                </button>
+            </div>
+            
+            <!-- Summary -->
+            <div class="summary" style="margin-top: 20px;">
+                <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-chart-pie"></i>
+                    Summary
+                </h4>
+                <div class="summary-item">
+                    <span>Google Safe Browsing</span>
+                    <span id="summary-google">❌ Not Tested</span>
+                </div>
+                <div class="summary-item">
+                    <span>VirusTotal</span>
+                    <span id="summary-virustotal">❌ Not Tested</span>
+                </div>
+                <div class="summary-item">
+                    <span>IPQualityScore</span>
+                    <span id="summary-ipqs">❌ Not Tested</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Documentation -->
+        <div class="card">
+            <h3><i class="fas fa-question-circle"></i> How to Get API Keys</h3>
+            
+            <div style="margin-top: 15px;">
+                <div style="margin-bottom: 15px;">
+                    <strong>🔵 Google Safe Browsing</strong>
+                    <ol style="margin-top: 5px; margin-left: 20px; color: #666; font-size: 14px;">
+                        <li>Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+                        <li>Create a new project or select existing</li>
+                        <li>Enable "Safe Browsing API"</li>
+                        <li>Go to Credentials → Create API Key</li>
+                    </ol>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong>🟢 VirusTotal</strong>
+                    <ol style="margin-top: 5px; margin-left: 20px; color: #666; font-size: 14px;">
+                        <li>Sign up at <a href="https://www.virustotal.com/" target="_blank">VirusTotal</a></li>
+                        <li>Go to your profile → API Key</li>
+                        <li>Copy your public API key</li>
+                    </ol>
+                </div>
+                
+                <div>
+                    <strong>🟠 IPQualityScore</strong>
+                    <ol style="margin-top: 5px; margin-left: 20px; color: #666; font-size: 14px;">
+                        <li>Register at <a href="https://www.ipqualityscore.com/" target="_blank">IPQualityScore</a></li>
+                        <li>Go to Dashboard → API Access</li>
+                        <li>Copy your API key</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Google Safe Browsing Test
+        async function testGoogleKey() {
+            const keyInput = document.getElementById('google-key');
+            const apiKey = keyInput.value.trim();
+            const testBtn = document.getElementById('google-test-btn');
+            const statusBadge = document.getElementById('google-status');
+            const resultBox = document.getElementById('google-result');
+            
+            if (!apiKey) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            // Show loading
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<span class="loader"></span> Testing...';
+            statusBadge.textContent = 'Testing';
+            statusBadge.className = 'api-status status-unknown';
+            
+            try {
+                const response = await fetch('/api/test/google', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusBadge.textContent = '✅ Working';
+                    statusBadge.className = 'api-status status-working';
+                    document.getElementById('summary-google').innerHTML = '✅ Working';
+                    
+                    resultBox.className = 'result-box show result-success';
+                    resultBox.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span class="badge badge-success">Valid</span>
+                            <span>API key is working correctly</span>
+                        </div>
+                        <div class="result-details">
+                            <strong>Response:</strong>
+                            <pre>${JSON.stringify(data.details, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.error || 'Test failed');
+                }
+            } catch (error) {
+                statusBadge.textContent = '❌ Failed';
+                statusBadge.className = 'api-status status-failed';
+                document.getElementById('summary-google').innerHTML = '❌ Failed';
+                
+                resultBox.className = 'result-box show result-error';
+                resultBox.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span class="badge badge-error">Error</span>
+                        <span>${error.message}</span>
+                    </div>
+                `;
+            } finally {
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="fas fa-vial"></i> Test Key';
+            }
+        }
+        
+        // VirusTotal Test
+        async function testVirusTotalKey() {
+            const keyInput = document.getElementById('virustotal-key');
+            const apiKey = keyInput.value.trim();
+            const testBtn = document.getElementById('virustotal-test-btn');
+            const statusBadge = document.getElementById('virustotal-status');
+            const resultBox = document.getElementById('virustotal-result');
+            
+            if (!apiKey) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<span class="loader"></span> Testing...';
+            statusBadge.textContent = 'Testing';
+            statusBadge.className = 'api-status status-unknown';
+            
+            try {
+                const response = await fetch('/api/test/virustotal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusBadge.textContent = '✅ Working';
+                    statusBadge.className = 'api-status status-working';
+                    document.getElementById('summary-virustotal').innerHTML = '✅ Working';
+                    
+                    resultBox.className = 'result-box show result-success';
+                    resultBox.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span class="badge badge-success">Valid</span>
+                            <span>${data.message}</span>
+                        </div>
+                        <div class="result-details">
+                            <strong>Stats:</strong>
+                            <pre>${JSON.stringify(data.details, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.error || 'Test failed');
+                }
+            } catch (error) {
+                statusBadge.textContent = '❌ Failed';
+                statusBadge.className = 'api-status status-failed';
+                document.getElementById('summary-virustotal').innerHTML = '❌ Failed';
+                
+                resultBox.className = 'result-box show result-error';
+                resultBox.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span class="badge badge-error">Error</span>
+                        <span>${error.message}</span>
+                    </div>
+                `;
+            } finally {
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="fas fa-vial"></i> Test Key';
+            }
+        }
+        
+        // IPQualityScore Test
+        async function testIPQSKey() {
+            const keyInput = document.getElementById('ipqs-key');
+            const apiKey = keyInput.value.trim();
+            const testBtn = document.getElementById('ipqs-test-btn');
+            const statusBadge = document.getElementById('ipqs-status');
+            const resultBox = document.getElementById('ipqs-result');
+            
+            if (!apiKey) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<span class="loader"></span> Testing...';
+            statusBadge.textContent = 'Testing';
+            statusBadge.className = 'api-status status-unknown';
+            
+            try {
+                const response = await fetch('/api/test/ipqs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusBadge.textContent = '✅ Working';
+                    statusBadge.className = 'api-status status-working';
+                    document.getElementById('summary-ipqs').innerHTML = '✅ Working';
+                    
+                    resultBox.className = 'result-box show result-success';
+                    resultBox.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span class="badge badge-success">Valid</span>
+                            <span>Risk Score: ${data.risk_score}</span>
+                        </div>
+                        <div class="result-details">
+                            <strong>Details:</strong>
+                            <pre>${JSON.stringify(data.details, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.error || 'Test failed');
+                }
+            } catch (error) {
+                statusBadge.textContent = '❌ Failed';
+                statusBadge.className = 'api-status status-failed';
+                document.getElementById('summary-ipqs').innerHTML = '❌ Failed';
+                
+                resultBox.className = 'result-box show result-error';
+                resultBox.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span class="badge badge-error">Error</span>
+                        <span>${error.message}</span>
+                    </div>
+                `;
+            } finally {
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="fas fa-vial"></i> Test Key';
+            }
+        }
+        
+        // Test all keys
+        async function testAllKeys() {
+            await testGoogleKey();
+            await testVirusTotalKey();
+            await testIPQSKey();
+        }
+        
+        // Load from .env (simulated)
+        function loadFromEnv() {
+            // This would typically fetch from server
+            document.getElementById('google-key').value = 'AIzaSy... (from .env)';
+            document.getElementById('virustotal-key').value = 'vt_key... (from .env)';
+            document.getElementById('ipqs-key').value = 'ipqs_key... (from .env)';
+        }
+        
+        // Save to .env (simulated)
+        function saveKeys() {
+            alert('In production, this would save to your .env file');
+        }
+        
+        // Auto-fill from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedGoogle = localStorage.getItem('google_api_key');
+            const savedVT = localStorage.getItem('virustotal_api_key');
+            const savedIPQS = localStorage.getItem('ipqs_api_key');
+            
+            if (savedGoogle) document.getElementById('google-key').value = savedGoogle;
+            if (savedVT) document.getElementById('virustotal-key').value = savedVT;
+            if (savedIPQS) document.getElementById('ipqs-key').value = savedIPQS;
+        });
+    </script>
+</body>
+</html>

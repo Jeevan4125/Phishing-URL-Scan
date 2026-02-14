@@ -25,7 +25,7 @@
 
 ## 🎯 Overview
 
-**PhishGuard Pro** is an enterprise-grade cybersecurity application designed to detect and prevent phishing attacks by analyzing URLs in real-time. The system combines heuristic analysis with Google Safe Browsing API integration to provide comprehensive threat detection with high accuracy.
+**Phishing_URL** is an enterprise-grade cybersecurity application designed to detect and prevent phishing attacks by analyzing URLs in real-time. The system combines heuristic analysis with Google Safe Browsing API integration to provide comprehensive threat detection with high accuracy.
 
 ### 🚨 The Problem
 Phishing attacks affect millions of users annually, causing:
